@@ -1,0 +1,85 @@
+{% extends 'music/base.html' %}
+{% load static %}
+
+{% block title %}MoodTunes – Discover Music by Mood{% endblock %}
+
+{% block content %}
+
+<!-- HERO SECTION -->
+<section class="hero">
+    <div class="hero-bg-orbs">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+    <div class="hero-content">
+        <div class="hero-badge"><i class="fas fa-waveform-lines"></i> Your Sound, Your Vibe</div>
+        <h1 class="hero-title">
+            How's your<br>
+            <span class="gradient-text">vibe today?</span>
+        </h1>
+        <p class="hero-subtitle">Let MoodTunes curate the perfect soundscape for your emotions. High-fidelity
+            recommendations, just for you.</p>
+
+        <!-- EMOTION CARDS -->
+        <div class="emotion-grid" id="emotionGrid">
+            {% for emo in emotions %}
+            <a href="{% url 'recommend' %}?emotion={{ emo.key }}" class="emotion-card" data-emotion="{{ emo.key }}"
+                style="--emo-color: {{ emo.color }}">
+                <div class="emotion-emoji">{{ emo.emoji }}</div>
+                <div class="emotion-label">{{ emo.key }}</div>
+                <div class="emotion-glow"></div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- QUICK STATS -->
+<section class="quick-stats">
+    <div class="stat-card">
+        <i class="fas fa-music stat-icon" style="color:#a78bfa"></i>
+        <div class="stat-info">
+            <div class="stat-number" id="totalSongs">–</div>
+            <div class="stat-label">Total Songs</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <i class="fas fa-heart stat-icon" style="color:#f43f5e"></i>
+        <div class="stat-info">
+            <div class="stat-number" id="totalFavs">–</div>
+            <div class="stat-label">Your Favorites</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <i class="fas fa-list stat-icon" style="color:#34d399"></i>
+        <div class="stat-info">
+            <div class="stat-number" id="totalPlaylists">–</div>
+            <div class="stat-label">Playlists</div>
+        </div>
+    </div>
+</section>
+
+<script>
+    window.FAVORITE_IDS = {{ favorite_ids | safe }};
+</script>
+<script>
+    // Fetch stats
+    fetch('/favorites/').then(r => r.text()).then(html => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const count = doc.querySelectorAll('.song-card').length;
+        document.getElementById('totalFavs').textContent = count;
+    });
+    fetch('/playlists/').then(r => r.text()).then(html => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const count = doc.querySelectorAll('.playlist-card').length;
+        document.getElementById('totalPlaylists').textContent = count;
+    });
+
+    // Count from all songs (you can add an API endpoint later)
+    document.getElementById('totalSongs').textContent = '{{ emotions|length }}×';
+</script>
+
+{% endblock %}

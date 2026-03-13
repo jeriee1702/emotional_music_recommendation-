@@ -1,0 +1,22 @@
+{
+  "name": "MoodTunes - Emotional Music",
+  "short_name": "MoodTunes",
+  "description": "Discover music that matches your mood.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a14",
+  "theme_color": "#0a0a14",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/static/music/img/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/static/music/img/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

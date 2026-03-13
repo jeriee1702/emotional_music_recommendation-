@@ -1,0 +1,224 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}MoodTunes – Emotional Music{% endblock %}</title>
+
+    <!-- SEO & Meta Tags -->
+    <meta name="description"
+        content="{% block meta_description %}Discover music that matches your mood. Emotion-based song recommendations with a modern music player.{% endblock %}">
+    <meta name="keywords" content="music, emotions, mood, audio, player, offline music, download music">
+    <link rel="canonical" href="{{ request.build_absolute_uri }}">
+
+    <!-- OpenGraph & Twitter Cards -->
+    <meta property="og:title" content="{% block og_title %}MoodTunes – Emotional Music Platform{% endblock %}">
+    <meta property="og:description"
+        content="{% block og_description %}Discover music that matches your mood. Offline-capable music recommendations.{% endblock %}">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ request.build_absolute_uri }}">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <!-- PWA Offline Support -->
+    <link rel="manifest" href="{% static 'music/manifest.json' %}">
+    <meta name="theme-color" content="#0a0a14">
+    <!-- <link rel="apple-touch-icon" href="{% static 'music/img/icon-192.png' %}"> -->
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'music/css/main.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+
+    <!-- ═══════════════════════════════════════════════════
+     SIDEBAR
+══════════════════════════════════════════════════════ -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-music logo-icon"></i>
+                <span class="logo-text">MoodTunes</span>
+            </div>
+            <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="{% url 'home' %}"
+                class="nav-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+                <i class="fas fa-home"></i><span>Home</span>
+            </a>
+            <a href="{% url 'favorites' %}"
+                class="nav-item {% if request.resolver_match.url_name == 'favorites' %}active{% endif %}">
+                <i class="fas fa-heart"></i><span>Favorites</span>
+            </a>
+            <a href="{% url 'playlists' %}"
+                class="nav-item {% if request.resolver_match.url_name == 'playlists' or request.resolver_match.url_name == 'playlist_detail' %}active{% endif %}">
+                <i class="fas fa-list-music"></i><span>Playlists</span>
+            </a>
+            <a href="{% url 'recently_played' %}"
+                class="nav-item {% if request.resolver_match.url_name == 'recently_played' %}active{% endif %}">
+                <i class="fas fa-clock-rotate-left"></i><span>Recent</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="sidebar-emotions-label">Quick Mood</div>
+            <div class="sidebar-emotions">
+                <a href="{% url 'recommend' %}?emotion=Happy" class="sidebar-emotion" title="Happy">😊</a>
+                <a href="{% url 'recommend' %}?emotion=Sad" class="sidebar-emotion" title="Sad">😢</a>
+                <a href="{% url 'recommend' %}?emotion=Relax" class="sidebar-emotion" title="Relax">😌</a>
+                <a href="{% url 'recommend' %}?emotion=Energetic" class="sidebar-emotion" title="Energetic">⚡</a>
+                <a href="{% url 'recommend' %}?emotion=Heartbroken" class="sidebar-emotion" title="Heartbroken">💔</a>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ═══════════════════════════════════════════════════
+     MAIN CONTENT WRAPPER
+══════════════════════════════════════════════════════ -->
+    <div class="main-wrapper">
+
+        <!-- TOP NAVBAR -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Open menu">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <form class="search-form" action="{% url 'search' %}" method="get" role="search">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" name="q" class="search-input" placeholder="Search songs, artists…"
+                        value="{{ request.GET.q }}" aria-label="Search songs">
+                </form>
+            </div>
+            <div class="topbar-right">
+                {% if user.is_authenticated %}
+                <div class="user-profile">
+                    <div class="user-avatar">
+                        {{ user.username|first|upper }}
+                    </div>
+                    <span class="user-name">{{ user.username }}</span>
+                    <div class="user-dropdown">
+                        <a href="{% url 'logout' %}" class="dropdown-item">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </a>
+                    </div>
+                </div>
+                {% else %}
+                <div class="auth-btns">
+                    <a href="{% url 'login' %}" class="auth-btn-minimal">Log In</a>
+                    <a href="{% url 'signup' %}" class="auth-btn-premium">Sign Up</a>
+                </div>
+                {% endif %}
+            </div>
+        </header>
+
+        <!-- PAGE CONTENT -->
+        <main class="content" id="mainContent">
+            {% if messages %}
+            {% for message in messages %}
+            <div class="toast-notification {{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+            {% endif %}
+            {% block content %}{% endblock %}
+        </main>
+
+    </div><!-- /.main-wrapper -->
+
+    <!-- ═══════════════════════════════════════════════════
+     PERSISTENT MUSIC PLAYER (bottom bar)
+══════════════════════════════════════════════════════ -->
+    <div class="player-bar" id="playerBar">
+        <audio id="audioPlayer" preload="metadata"></audio>
+
+        <!-- Song Info -->
+        <div class="player-info">
+            <div class="player-cover" id="playerCover">
+                <img src="" alt="Cover" id="playerCoverImg">
+                <div class="player-cover-placeholder" id="playerCoverPlaceholder">
+                    <i class="fas fa-music"></i>
+                </div>
+            </div>
+            <div class="player-meta">
+                <div class="player-title" id="playerTitle">No song playing</div>
+                <div class="player-artist" id="playerArtist">–</div>
+            </div>
+            <button class="player-fav-btn" id="playerFavBtn" data-song-id="" title="Favorite">
+                <i class="far fa-heart"></i>
+            </button>
+        </div>
+
+        <!-- Controls -->
+        <div class="player-controls">
+            <button class="ctrl-btn" id="prevBtn" title="Previous"><i class="fas fa-backward-step"></i></button>
+            <button class="ctrl-btn play-btn" id="playPauseBtn" title="Play/Pause">
+                <i class="fas fa-play" id="playIcon"></i>
+            </button>
+            <button class="ctrl-btn" id="nextBtn" title="Next"><i class="fas fa-forward-step"></i></button>
+        </div>
+
+        <!-- Progress & Volume -->
+        <div class="player-right">
+            <div class="progress-area">
+                <span class="time-label" id="currentTime">0:00</span>
+                <div class="progress-bar-wrap" id="progressBarWrap">
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" id="progressFill"></div>
+                    </div>
+                    <input type="range" class="progress-range" id="progressRange" min="0" max="100" value="0"
+                        step="0.1">
+                </div>
+                <span class="time-label" id="totalTime">0:00</span>
+            </div>
+            <div class="volume-area">
+                <button class="ctrl-btn vol-btn" id="muteBtn" title="Mute"><i class="fas fa-volume-high"
+                        id="volIcon"></i></button>
+                <input type="range" class="volume-range" id="volumeRange" min="0" max="100" value="80" step="1">
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════
+     ADD TO PLAYLIST MODAL
+══════════════════════════════════════════════════════ -->
+    <div class="modal-overlay" id="playlistModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>Add to Playlist</h3>
+                <button class="modal-close" id="modalClose"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <p class="modal-hint">Choose a playlist:</p>
+                <div id="playlistOptions"></div>
+                <p class="modal-hint" style="margin-top:1rem;">or <a href="{% url 'playlists' %}" class="link">Create a
+                        new playlist</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'music/js/player.js' %}"></script>
+
+    <!-- Register Service Worker -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => console.log('ServiceWorker registered:', reg.scope))
+                    .catch(err => console.error('ServiceWorker registration failed:', err));
+            });
+        }
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

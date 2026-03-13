@@ -1,0 +1,54 @@
+{% extends 'music/base.html' %}
+{% load static %}
+
+{% block title %}My Playlists – MoodTunes{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-left">
+        <div>
+            <h1 class="page-title"><i class="fas fa-list-music" style="color:#34d399"></i> My Playlists</h1>
+            <p class="page-subtitle">{{ playlists|length }} playlist{{ playlists|length|pluralize }}</p>
+        </div>
+    </div>
+    <button class="btn-primary"
+        onclick="document.getElementById('createPlaylistForm').scrollIntoView({behavior:'smooth'})">
+        <i class="fas fa-plus"></i> New Playlist
+    </button>
+</div>
+
+<!-- PLAYLIST GRID -->
+{% if playlists %}
+<div class="playlists-grid">
+    {% for pl in playlists %}
+    <a href="{% url 'playlist_detail' pl.id %}" class="playlist-card">
+        <div class="playlist-cover">
+            <i class="fas fa-list-music"></i>
+        </div>
+        <div class="playlist-info">
+            <div class="playlist-name">{{ pl.name }}</div>
+            <div class="playlist-count">{{ pl.song_count }} song{{ pl.song_count|pluralize }}</div>
+        </div>
+        <div class="playlist-arrow"><i class="fas fa-chevron-right"></i></div>
+    </a>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    <div class="empty-icon">🎵</div>
+    <h2>No playlists yet</h2>
+    <p>Create your first playlist below to organize your favorite songs.</p>
+</div>
+{% endif %}
+
+<!-- CREATE NEW PLAYLIST -->
+<div class="create-playlist-section" id="createPlaylistForm">
+    <h2 class="section-title">Create New Playlist</h2>
+    <form method="post" action="{% url 'playlists' %}" class="create-form">
+        {% csrf_token %}
+        <input type="text" name="name" class="form-input" placeholder="Playlist name e.g. Late Night Vibes"
+            maxlength="200" required>
+        <button type="submit" class="btn-primary"><i class="fas fa-plus"></i> Create</button>
+    </form>
+</div>
+{% endblock %}
